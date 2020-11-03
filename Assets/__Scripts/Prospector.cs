@@ -24,7 +24,7 @@ public class Prospector : MonoBehaviour {
 
     [Header("Set Dynamically")]
     public Deck deck;
-    public Layout layout;
+    public BartokLayout layout;
     public List<CardProspector> drawPile;
     public Transform layoutAnchor;
     public CardProspector target;
@@ -81,7 +81,7 @@ public class Prospector : MonoBehaviour {
         deck.InitDeck(deckXML.text); // Pass DeckXML to it
         Deck.Shuffle(ref deck.cards); // This shuffles the deck by reference
 
-        layout = GetComponent<Layout>(); // Get the Layout component
+        layout = GetComponent<BartokLayout>(); // Get the Layout component
         layout.ReadLayout(layoutXML.text); // Pass LayoutXML to it4
 
         drawPile = ConvertListCardsToListCardProspectors(deck.cards);
