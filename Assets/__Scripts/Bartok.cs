@@ -150,6 +150,7 @@ public class Bartok : MonoBehaviour
 
         CURRENT_PLAYER = players[num];
         phase = TurnPhase.pre;
+        CURRENT_PLAYER.TakeTurn();
         Utils.tr("Bartok:PassTurn()", "Old: " + lastPlayerNum,"New: " + CURRENT_PLAYER.playerNum);   
     }
 
@@ -199,5 +200,43 @@ public class Bartok : MonoBehaviour
         CardBartok cd = drawPile[0];   
         drawPile.RemoveAt(0);          
         return (cd);                   
-    }    
+    }
+
+    public void CardClicked(CardBartok tCB)
+    {
+        if (CURRENT_PLAYER.type != PlayerType.human) return;  
+        if (phase == TurnPhase.waiting) return;            
+
+        switch (tCB.state)
+        {                               
+            case CBState.drawpile:    
+                
+                CardBartok cb = CURRENT_PLAYER.AddCard(Draw());
+                cb.callbackPlayer = CURRENT_PLAYER;
+
+                Utils.tr("Bartok:CardClicked()", "Draw", cb.name);
+                phase = TurnPhase.waiting;
+                break;
+
+
+            case CBState.hand:    
+
+                if (ValidPlay(tCB))
+                {
+                    CURRENT_PLAYER.RemoveCard(tCB);
+                    MoveToTarget(tCB);
+
+                    tCB.callbackPlayer = CURRENT_PLAYER;
+                    Utils.tr("Bartok:CardClicked()", "Play", tCB.name,
+                        targetCard.name + " is target");                  
+                    phase = TurnPhase.waiting;
+                }
+                else
+                {
+                    Utils.tr("Bartok:CardClicked()", "Attempted to Play",
+                        tCB.name, targetCard.name + " is target");  
+                }
+                break;
+        }
+    }
 }
