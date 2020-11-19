@@ -61,8 +61,9 @@ public class CardBartok : Card
         MoveTo(ePos, Quaternion.identity);
     }
 
-    void Update()
+    void FixedUpdate()
     {
+        Debug.Log("card update");
         switch (state)
         {                
             case CBState.toHand:
@@ -72,6 +73,7 @@ public class CardBartok : Card
             case CBState.toDrawpile:
 
             case CBState.to:
+                Debug.Log("switch case to");
                 float u = (Time.time - timeStart) / timeDuration;  
                 float uC = Easing.Ease(u, MOVE_EASING);
                 if (u < 0)
@@ -95,7 +97,9 @@ public class CardBartok : Card
 
                     if (reportFinishTo != null)
                     {
+                        Debug.Log("check me");
                         reportFinishTo.SendMessage("CBCallback", this);
+                        Debug.Log("out ma");
                         reportFinishTo = null;
                     }
                     else if (callbackPlayer != null)
@@ -103,16 +107,13 @@ public class CardBartok : Card
                         callbackPlayer.CBCallback(this);
                         callbackPlayer = null;
                     }
-                    else
-                    {
-                    }
                 }
                 else
                 { 
                     Vector3 pos = Utils.Bezier(uC, bezierPts);
                     transform.localPosition = pos;
-                    //Quaternion rotQ = Utils.Bezier(uC, bezierRots);
-                    //transform.rotation = rotQ;
+                    Quaternion rotQ = Utils.Bezier(uC, bezierRots);
+                    transform.rotation = rotQ;
 
                     if (u > 0.5f)
                     {                                       

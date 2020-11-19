@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
 public enum TurnPhase
@@ -22,8 +23,11 @@ public class Bartok : MonoBehaviour
     public TextAsset layoutXML;
     public Vector3 layoutCenter = Vector3.zero;
     public float handFanDegrees = 10f;
-    public int numStartingCards = 7;
+    public int numStartingCards = 3;
     public float drawTimeStagger = 0.1f;
+    public GameObject LastCardaiPrefab;
+    public GameObject LastCardhumanPrefab;
+
 
     [Header("Set Dynamically")]
     public Deck deck;
@@ -34,6 +38,8 @@ public class Bartok : MonoBehaviour
     public TurnPhase phase = TurnPhase.idle;
     private BartokLayout layout;
     private Transform layoutAnchor;
+    public bool firstOne;
+    int LastCarder;
 
     void Awake()
     {
@@ -46,6 +52,7 @@ public class Bartok : MonoBehaviour
         deck.InitDeck(deckXML.text);    
         Deck.Shuffle(ref deck.cards);
 
+        firstOne = false;
         layout = GetComponent<BartokLayout>(); 
         layout.ReadLayout(layoutXML.text);
         drawPile = UpgradeCardsList(deck.cards);
@@ -110,6 +117,7 @@ public class Bartok : MonoBehaviour
                 players[(j + 1) % 4].AddCard(tCB); 
             }
         }
+        Debug.Log("DEBUG 1");                                                                                                                       //debug 1
         Invoke("DrawFirstTarget", drawTimeStagger * (numStartingCards * 4 + 4));
     }
 
@@ -117,10 +125,12 @@ public class Bartok : MonoBehaviour
     {
         CardBartok tCB = MoveToTarget(Draw());
         tCB.reportFinishTo = this.gameObject;
+        Debug.Log("DEBUG 2");                                                                                                                       //debug 2
     }
 
     public void CBCallback(CardBartok cb)
-    {                    
+    {
+        Debug.Log("DEBUG 3");                                                                                                                       //debug 3
         Utils.tr("Bartok:CBCallback()", cb.name);  
         StartGame(); 
     }
@@ -129,19 +139,27 @@ public class Bartok : MonoBehaviour
 
     public void StartGame()
     {
+        Debug.Log("DEBUG 4");                                                                                                                       //debug 4
         PassTurn(1);                      
     }
 
 
 
     public void PassTurn(int num = -1)
-    {                                     
+    {                               
+        while(phase == TurnPhase.idle)
+        {
+            int i = 0;
+            i++;
+        }
         if (num == -1)
         {
             int ndx = players.IndexOf(CURRENT_PLAYER);
             num = (ndx + 1) % 4;
         }
         int lastPlayerNum = -1;
+
+        
 
         if (CURRENT_PLAYER != null)
         {
@@ -155,6 +173,15 @@ public class Bartok : MonoBehaviour
         CURRENT_PLAYER = players[num];
         phase = TurnPhase.pre;
         CURRENT_PLAYER.TakeTurn();
+
+        if (CURRENT_PLAYER.hand.Count == 1)                 //check for 1 card
+        {
+            Debug.Log("starting it");
+            phase = TurnPhase.idle;                         //does changing phase do anything
+            LastCarder = CURRENT_PLAYER.playerNum;                    //archive player w 1 card
+            LastCard();                                     //jump into the rabbit hole
+        }
+
         Utils.tr("Bartok:PassTurn()", "Old: " + lastPlayerNum,"New: " + CURRENT_PLAYER.playerNum);   
     }
 
@@ -215,6 +242,7 @@ public class Bartok : MonoBehaviour
         }
 
         targetCard = tCB;
+        Debug.Log("DEBUG 2.5");                                                                               //debug 2.5
         return (tCB);
     }
 
@@ -286,10 +314,19 @@ public class Bartok : MonoBehaviour
                     CURRENT_PLAYER.RemoveCard(tCB);
                     MoveToTarget(tCB);
 
+                    if (CURRENT_PLAYER.hand.Count == 1)                 //check for 1 card
+                    {
+                        Debug.Log("starting it");
+                        phase = TurnPhase.idle;                         //does changing phase do anything
+                        LastCarder = CURRENT_PLAYER.playerNum;                    //archive player w 1 card
+                        LastCard();                                     //jump into the rabbit hole
+                    }
+
+
                     tCB.callbackPlayer = CURRENT_PLAYER;
                     Utils.tr("Bartok:CardClicked()", "Play", tCB.name,
                         targetCard.name + " is target");                  
-                    phase = TurnPhase.waiting;
+                    phase = TurnPhase.waiting;                    
                 }
                 else
                 {
@@ -297,6 +334,109 @@ public class Bartok : MonoBehaviour
                         tCB.name, targetCard.name + " is target");  
                 }
                 break;
+        }
+    }
+
+    void LastCard()
+    {
+        firstOne = false;                                               //bool for checking who's first
+        foreach(Player player in players)
+        {
+            Transform temp = GameObject.FindGameObjectWithTag("Canvas").transform;                         //for each player //make a botched transform of the player (could be wrong)
+            temp.localScale = new Vector3(1, 1, 1);
+
+            if(player.type == PlayerType.ai)
+            {
+                GameObject GO = Instantiate(LastCardaiPrefab, temp);    //if AI make the slider that fires after a random time (from 0.8s to 1.6s)
+                GO.transform.SetParent(GameObject.FindGameObjectWithTag("Canvas").transform);
+                GO.transform.localPosition = GetPosition(player.playerNum);    
+            }
+            else if(player.type == PlayerType.human)
+            {
+                GameObject GO = Instantiate(LastCardhumanPrefab, temp); //if human make button to click
+                GO.transform.SetParent(GameObject.FindGameObjectWithTag("Canvas").transform);
+                GO.transform.localPosition = GetPosition(player.playerNum);
+            }
+        }
+    }
+
+    Vector3 GetPosition(int player) //only returns player[0]
+    {        
+        if (player == 1)
+        {
+            return new Vector3(0, -250, 0);
+        }
+        else if (player == 2)
+        {
+            return new Vector3(-345,0,0);
+        }
+        else if (player == 3)
+        {
+            return new Vector3(0,250,0);
+        }
+        else if (player == 4)
+        {
+            return new Vector3(345,0,0);
+        }        
+        return Vector3.zero;
+    }
+    
+    public void FirstServe()
+    {
+        Player victim = null;
+        foreach(Player player in players)
+        {
+            if (LastCarder == player.playerNum)
+            {
+                victim = player;
+            }
+        }
+        if (victim == null) Debug.Log("First Serve error: null victim");
+        if (victim != null)
+        {
+            victim.AddCard(Draw());
+            Debug.Log("Adding card to:" + victim.playerNum);
+            if (victim.hand.Count == 3)
+            {
+                foreach (GameObject go in GameObject.FindGameObjectsWithTag("LastCardUI"))
+                {
+                    Destroy(go);
+                }
+                phase = TurnPhase.waiting;                
+            }            
+        }        
+    }
+
+    public void FirstCome(int player)            //called by UI (slider for AI, button for human
+    {
+        Debug.Log("Trying to lastcard: " + player);
+        if (firstOne) return;                           //firsOne should be false, if not we are not first, return
+        Debug.Log("Actually LastCarding: " + player);
+        Debug.Log("MF with one card: " + LastCarder);
+        firstOne = true;                           //lock method behind us
+        Debug.Log("firstOne true");
+
+        if (player == LastCarder)                  //move on if player w 1 card called it first
+        {
+            Debug.Log("Last Card avoided");
+            phase = TurnPhase.waiting;
+            return;
+        }
+        else
+        {                                           //add 2 cards to archived player if another called it first
+            float time = 1.6f;
+            float check = 0;
+            Debug.Log("Last Card +2");
+            while (check <= time)
+            {
+                check += Time.deltaTime;
+            }
+            FirstServe();
+            while(check <= time)
+            {
+                check += Time.deltaTime;
+            }
+            FirstServe();           
         }
     }
 }

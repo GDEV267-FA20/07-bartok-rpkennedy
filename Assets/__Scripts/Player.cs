@@ -80,6 +80,8 @@ public class Player
 
     public void TakeTurn()
     {
+        Debug.Log("taketurn()");
+        if (Bartok.S.phase == TurnPhase.idle) return;
         Utils.tr("Player.TakeTurn");
         if (type == PlayerType.human) return;
         Bartok.S.phase = TurnPhase.waiting;
