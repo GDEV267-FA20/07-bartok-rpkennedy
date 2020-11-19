@@ -395,7 +395,7 @@ GameObject:
   - component: {fileID: 793571725}
   m_Layer: 5
   m_Name: Canvas
-  m_TagString: Untagged
+  m_TagString: Canvas
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -810,14 +810,19 @@ MonoBehaviour:
   layoutXML: {fileID: 4900000, guid: 2024316f04051b146a9cc29b3713f070, type: 3}
   layoutCenter: {x: 0, y: 0, z: 0}
   handFanDegrees: 10
-  numStartingCards: 7
+  numStartingCards: 3
   drawTimeStagger: 0.1
+  LastCardaiPrefab: {fileID: 7193288436986647416, guid: c85177420bc1bc84a86fc2aab496bbc1,
+    type: 3}
+  LastCardhumanPrefab: {fileID: 4506821882712682740, guid: 32e2b6c0e7b27ac4d9198f9cbaa3ee87,
+    type: 3}
   deck: {fileID: 0}
   drawPile: []
   discardPile: []
   players: []
   targetCard: {fileID: 0}
   phase: 0
+  LastCarder: 0
 --- !u!114 &1382180771
 MonoBehaviour:
   m_ObjectHideFlags: 0
