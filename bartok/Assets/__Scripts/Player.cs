@@ -40,15 +40,6 @@ public class Player
         if (hand == null || !hand.Contains(cb)) return null;
         hand.Remove(cb);
         FanHand();
-
-        if (hand.Count == 1)                 //check for 1 card
-        {
-            Debug.Log("starting it");
-            Bartok.S.phase = TurnPhase.lastCard;                         //does changing phase do anything
-            Bartok.S.LastCarder = playerNum;                    //archive player w 1 card
-            Bartok.S.LastCard();                                     //jump into the rabbit hole
-        }
-
         return (cb);
     }
     public void FanHand()
@@ -92,7 +83,7 @@ public class Player
         Utils.tr("Player.TakeTurn");
         if (type == PlayerType.human) return;
         Debug.Log(Bartok.S.phase);
-        if (Bartok.S.phase == TurnPhase.lastCard) return;
+        if (Bartok.S.lasting) return;
         Bartok.S.phase = TurnPhase.waiting;
 
         CardBartok cb;
@@ -116,11 +107,18 @@ public class Player
         cb = validCards[Random.Range(0, validCards.Count)];         
         RemoveCard(cb);
         Bartok.S.MoveToTarget(cb);
-        cb.callbackPlayer = this;                               
+        cb.callbackPlayer = this;        
     }
 
     public void CBCallback(CardBartok tCB)
     {
+        if (hand.Count == 1)                 //check for 1 card
+        {
+            Debug.Log("starting it");
+            Bartok.S.lasting = true;                       //does changing phase do anything
+            Bartok.S.LastCarder = playerNum;                    //archive player w 1 card
+            Bartok.S.LastCard();                                     //jump into the rabbit hole
+        }
         Utils.tr("Player.CBCallback()", tCB.name, "Player " + playerNum);
         Bartok.S.PassTurn();
     }

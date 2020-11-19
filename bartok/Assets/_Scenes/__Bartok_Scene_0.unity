@@ -816,6 +816,7 @@ MonoBehaviour:
     type: 3}
   LastCardhumanPrefab: {fileID: 4506821882712682740, guid: 32e2b6c0e7b27ac4d9198f9cbaa3ee87,
     type: 3}
+  lasting: 0
   deck: {fileID: 0}
   drawPile: []
   discardPile: []

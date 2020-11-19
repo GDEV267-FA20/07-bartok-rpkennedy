@@ -63,6 +63,7 @@ public class CardBartok : Card
 
     void Update()
     {
+        if (Bartok.S.lasting) return;
         switch (state)
         {                
             case CBState.toHand:
@@ -71,8 +72,7 @@ public class CardBartok : Card
 
             case CBState.toDrawpile:
 
-            case CBState.to:
-                if (Bartok.S.phase == TurnPhase.lastCard) return;
+            case CBState.to:                
                 float u = (Time.time - timeStart) / timeDuration;  
                 float uC = Easing.Ease(u, MOVE_EASING);
                 if (u < 0)
@@ -94,7 +94,6 @@ public class CardBartok : Card
 
                     timeStart = 0;
 
-                    if (Bartok.S.phase == TurnPhase.lastCard) return;
                     if (reportFinishTo != null)
                     {
                         reportFinishTo.SendMessage("CBCallback", this);

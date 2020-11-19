@@ -9,7 +9,6 @@ public enum TurnPhase
     pre,
     waiting,
     post,
-    lastCard,
     gameOver
 }
 
@@ -29,12 +28,13 @@ public class Bartok : MonoBehaviour
     public GameObject LastCardhumanPrefab;
 
     [Header("Set Dynamically")]
+    public bool lasting;
     public Deck deck;
     public List<CardBartok> drawPile;
     public List<CardBartok> discardPile;
     public List<Player> players;                
     public CardBartok targetCard;
-    public TurnPhase phase = TurnPhase.idle;
+    public TurnPhase phase;
     private BartokLayout layout;
     private Transform layoutAnchor;
     bool firstOne;
@@ -42,7 +42,8 @@ public class Bartok : MonoBehaviour
 
     void Awake()
     {
-        S = this; 
+        S = this;
+        phase = TurnPhase.idle;
     }
 
     void Start()
@@ -50,6 +51,7 @@ public class Bartok : MonoBehaviour
         deck = GetComponent<Deck>();   
         deck.InitDeck(deckXML.text);    
         Deck.Shuffle(ref deck.cards);
+        lasting = false;
 
         firstOne = false;
         layout = GetComponent<BartokLayout>(); 
@@ -329,7 +331,7 @@ public class Bartok : MonoBehaviour
         }
     }
 
-    Vector3 GetPosition(int player) 
+    public Vector3 GetPosition(int player) 
     {
         if (player == 1)
         {
@@ -353,7 +355,10 @@ public class Bartok : MonoBehaviour
     public void FirstCome(int player)            //called by UI (slider for AI, button for human
     {
         Debug.Log("Trying to lastcard: " + player);
-        if (firstOne) return;                           //firsOne should be false, if not we are not first, return
+        if (firstOne) return;
+
+        Transform temp = GameObject.FindGameObjectWithTag("Canvas").transform;//firsOne should be false, if not we are not first, return
+        temp.position = GetPosition(player);
         Debug.Log("Actually LastCarding: " + player);
         Debug.Log("Laddie with one card: " + LastCarder);
         firstOne = true;                           //lock method behind us
@@ -364,7 +369,7 @@ public class Bartok : MonoBehaviour
             Debug.Log("Last Card avoided");
             phase = TurnPhase.idle;
             CleanUp();
-            PassTurn();
+            PassTurn(player-1);
         }
         else
         {                                           //add 2 cards to archived player if another called it first
@@ -387,6 +392,7 @@ public class Bartok : MonoBehaviour
     void CleanUp()
     {
         firstOne = false;
+        lasting = false;
         foreach (GameObject go in GameObject.FindGameObjectsWithTag("LastCardUI"))
         {
             Destroy(go);
@@ -412,7 +418,7 @@ public class Bartok : MonoBehaviour
             {
                 CleanUp();
                 phase = TurnPhase.idle;
-                PassTurn();
+                PassTurn(victim.playerNum);
             }            
         }
     }    

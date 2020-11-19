@@ -15,7 +15,7 @@ public class LastCardhuman : MonoBehaviour
         button = this.gameObject.GetComponent<Button>();
         whomst = Whomstdve();
         Debug.Log(whomst.playerNum);
-        Bartok.S.phase = TurnPhase.lastCard;
+        Bartok.S.lasting = true;
     }
 
     Player Whomstdve()
